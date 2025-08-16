@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Go Fresh</title>
+</head>
+<body>
+  <div id="company"></div>
+
+  <script>
+    // Company details
+    const companyName = "<b>Go Fresh</b>";
+    const companyLogo = "https://lh3.googleusercontent.com/3OQwwHdr24p7tomSrSxiXkt5kxExHlXzJaMQM4Eq5T-sBnEDZpxig0W-7FrAQvjKGz2mvFFk4-zetsiR19K-Cxt7Ec96zrsdtReuFcSsT0HFZCjnXKW0";
+
+    // Insert into HTML
+    document.getElementById("company").innerHTML = `
+      <h1>${companyName}</h1>
+      <img src="${companyLogo}" alt="Company Logo" width="200">
+    `;
+  </script>
+</body>
+</html>
