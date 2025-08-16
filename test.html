@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Checkout with Address Autocomplete</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <style>
+    #map {
+      height: 250px;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+    #combined-address {
+      background: #f9f9f9;
+      border-radius: 8px;
+      padding: 10px 15px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body class="container">
+
+  <h4>Checkout</h4>
+
+  <div class="input-field">
+    <input id="autocomplete" type="text" placeholder="Enter your address">
+    <label for="autocomplete">Address</label>
+  </div>
+
+  <div id="map"></div>
+
+  <div class="input-field">
+    <select id="landmark">
+      <option value="" disabled selected>Choose a nearby landmark</option>
+    </select>
+    <label for="landmark">Nearby Landmark</label>
+  </div>
+
+  <div class="input-field">
+    <textarea id="combined-address" class="materialize-textarea" readonly></textarea>
+    <label for="combined-address">Final Address</label>
+  </div>
+
+  <button class="btn waves-effect waves-light green">Confirm Address</button>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <script>
+    let map, marker, autocomplete;
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 12.9716, lng: 77.5946 }, // Default Bangalore
+        zoom: 15,
+      });
+
+      marker = new google.maps.Marker({
+        map: map,
+        draggable: true,
+      });
+
+      autocomplete = new google.maps.places.Autocomplete(
+        document.getElementById("autocomplete"),
+        { types: ["geocode"] }
+      );
+
+      autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace();
+        if (!place.geometry) return;
+
+        map.setCenter(place.geometry.location);
+        marker.setPosition(place.geometry.location);
+        updateAddress(place);
+      });
+
+      marker.addListener("dragend", () => {
+        const pos = marker.getPosition();
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ location: pos }, (results, status) => {
+          if (status === "OK" && results[0]) {
+            updateAddress(results[0]);
+          }
+        });
+      });
+
+      M.FormSelect.init(document.getElementById("landmark"));
+    }
+
+    function updateAddress(place) {
+      document.getElementById("autocomplete").value = place.formatted_address;
+
+      // Update landmark dropdown with some sample options
+      const landmarkSelect = document.getElementById("landmark");
+      landmarkSelect.innerHTML = '<option value="" disabled selected>Choose a nearby landmark</option>';
+      (place.address_components || []).forEach(c => {
+        if (c.types.includes("point_of_interest") || c.types.includes("establishment")) {
+          let opt = document.createElement("option");
+          opt.value = c.long_name;
+          opt.text = c.long_name;
+          landmarkSelect.appendChild(opt);
+        }
+      });
+
+      M.FormSelect.init(landmarkSelect);
+
+      // Update final combined address
+      document.getElementById("combined-address").value = place.formatted_address;
+      M.textareaAutoResize(document.getElementById("combined-address"));
+    }
+  </script>
+
+  <!-- Replace YOUR_API_KEY with your restricted Google Maps API key -->
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&callback=initMap">
+  </script>
+</body>
+</html>
